@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
+from copy import copy
 from django.utils.translation import ugettext_lazy as _
 
 from import_export.admin import ImportExportModelAdmin
-
-from ralph.admin import RalphAdmin, register
+from django.shortcuts import get_object_or_404
+from ralph.admin import (
+    RalphAdmin,
+    register,
+    ralph_site,
+)
 from ralph.admin.views import RalphDetailView
 from ralph.data_importer import resources
 from ralph.data_center.models.virtual import (
@@ -38,6 +43,48 @@ from ralph.data_center.models.networks import (
 class DataCenterAdmin(RalphAdmin):
     pass
 
+from django.contrib import admin
+
+
+class Cos(admin.TabularInline):
+    model = Connection
+    fk_name = 'outbound'
+
+
+class DataCenterAssetAdditionalInfoAdmin(RalphAdmin):
+    """Data Center Asset admin class."""
+
+    fieldsets = (
+        (_('Additional Info'), {
+            'fields': (
+                'rack', 'slots', 'slot_no', 'configuration_path',
+                'position', 'orientation'
+            )
+        }),
+    )
+
+    inlines = [Cos]
+
+
+class DataCenterAssetAdditionalInfoAdminView(RalphDetailView):
+    """Data Center Asset admin class."""
+
+    icon = 'folder'
+    label = 'Additional Info'
+    name = 'dc_additional_info'
+    url_name = 'dc_additional_info'
+
+    def dispatch(self, request, model, pk, *args, **kwargs):
+        self.object = get_object_or_404(model, pk=pk)
+        self.views = kwargs['views']
+        extra_context = copy(super().get_context_data())
+        extra_context['object'] = self.object
+        return DataCenterAssetAdditionalInfoAdmin(
+            DataCenterAsset,
+            ralph_site,
+            change_views=self.views
+        ).change_view(request, pk, extra_context=extra_context)
+
 
 class NetworkView(RalphDetailView):
     name = 'network'
@@ -55,7 +102,11 @@ class NetworkView(RalphDetailView):
 class DataCenterAssetAdmin(ImportExportModelAdmin, RalphAdmin):
     """Data Center Asset admin class."""
 
-    change_views = [NetworkView]
+    change_views = [
+        NetworkView,
+        DataCenterAssetAdditionalInfoAdminView,
+    ]
+
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'purchase_order', 'model',
