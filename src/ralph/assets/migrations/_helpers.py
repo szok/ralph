@@ -31,8 +31,8 @@ def baseobject_migration(
         # first of all, create new BaseObject instance for each object
         # it's id will be later referenced as baseobject_ptr_id
         base_object = BaseObject.objects.create(
-            content_type=model_content_type,
-            **{k: getattr(obj, v) for (k, v) in (rewrite_fields or {})}
+            content_type_id=model_content_type.id,
+            **{k: getattr(obj, v) for (k, v) in (rewrite_fields.items() or {})}
         )
         old_pk = obj.pk
         id_mapping[old_pk] = base_object.id
@@ -77,7 +77,7 @@ def baseobject_migration(
                 **{relation_field: new_id}
             )
 
-    # TODO: m2m?
+    # TODO: m2m?. tags?
 
 
 def _foreign_key_check_wrap(operations):

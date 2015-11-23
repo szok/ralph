@@ -14,9 +14,7 @@ from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
-    NamedMixin,
-    TaggableMixin,
-    TimeStampMixin
+    NamedMixin
 )
 from ralph.lib.permissions import PermByFieldMixin
 
@@ -53,11 +51,9 @@ class Software(PermByFieldMixin, NamedMixin, models.Model):
 
 
 class Licence(
+    BaseObject,
     Regionalizable,
     AdminAbsoluteUrlMixin,
-    PermByFieldMixin,
-    TimeStampMixin,
-    TaggableMixin,
     models.Model,
 ):
 
@@ -139,7 +135,7 @@ class Licence(
     invoice_no = models.CharField(
         max_length=128, db_index=True, null=True, blank=True
     )
-    remarks = models.TextField(blank=True)
+    # remarks = models.TextField(blank=True)
     license_details = models.CharField(
         verbose_name=_('License details'),
         max_length=1024,
