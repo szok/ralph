@@ -259,6 +259,8 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
             position=0,
         )
 
+from ralph.networks.models.networks import IPAddress
+
 
 class DataCenterAsset(AutocompleteTooltipMixin, Asset):
     _allow_in_dashboard = True
@@ -521,6 +523,53 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
                 # Save new asset to list, required to redirect url.
                 # RunTransitionView.get_success_url()
                 instances[i] = back_office_asset
+
+    @classmethod
+    @transition_action(
+        verbose_name=_('Deployment'),
+        form_fields={
+            'service_env': {
+                'field': forms.CharField(label=_('Service env')),
+                'autocomplete_field': 'service_env'
+            },
+            'venture_role': {
+                'field': forms.CharField(label=_('Venture role')),
+                'default_value': lambda x, y: 'ralph_prod/www'
+            },
+            'mac': {
+                'field': forms.ChoiceField(
+                    label=_('Mac address'),
+                    choices=[('1', '00:0A:E6:3E:FD:E1')],
+                ),
+            },
+            'ipaddress': {
+                'field': forms.CharField(label=_('IP Address')),
+                'default_value': lambda x, y: '<next free>'
+            },
+            # 'ipaddress': {
+            #     'field': forms.ModelChoiceField(
+            #         label=_('IP Address'),
+            #         queryset=IPAddress.objects.all(),
+            #         # empty_label=None
+            #     ),
+            #     # 'autocomplete_field': 'address',
+            #     # 'autocomplete_model': 'networks.',
+            #     # 'autocomplete_model': 'networks.Netowrk',
+            # },
+            'hostname': {
+                'field': forms.CharField(label=_('Hostname')),
+                'default_value': lambda x, y: '<next free>'
+            },
+            'preboot': {
+                'field': forms.ChoiceField(
+                    label=_('Preboot'),
+                    choices=[('1', 'Cent OS')],
+                ),
+            },
+        }
+    )
+    def deployment(cls, instances, request, **kwargs):
+        pass
 
 
 class Connection(models.Model):
